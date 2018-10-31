@@ -24,14 +24,12 @@ func (s structModel)viewAll(table string)(query string, err error){
 	if s.err != nil{
 		return "", s.err
 	}
-
+	var arrQuery []string
 	query = "SELECT"
 	for i, _ := range s.value{
-		keyValue := s.key[i]
-		query += " " +keyValue + ","
+		arrQuery = append(arrQuery, " " +s.key[i])
 	}
-	query = query[0:(len(query)-1)]
-	query += " FROM " + table
+	query = query + strings.Join(arrQuery, ",") + " FROM " + table
 	return query,nil
 }
 
@@ -40,21 +38,18 @@ func (s structModel)insert(table string)(query string, values []interface{}, err
 	if s.err != nil{
 		return "", nil, s.err
 	}
-
+	var arrQuery, valArr []string
 	query = "INSERT INTO " + table +"("
 	queryForValues := " VALUES("
 	listValue := make([]interface{}, 0)
 
 	for i, _ := range s.value{
-		query += " " + s.key[i] + ","
-		queryForValues += " $" + strconv.Itoa(i+1) +","
+		arrQuery = append(arrQuery, " " + s.key[i])
+		valArr = append(valArr, " $" + strconv.Itoa(i+1))
 		listValue = append(listValue, s.value[i])
 	}
-	query = query[0:len(query)-1]
-	query += ")"
-	queryForValues = queryForValues[0:len(queryForValues)-1]
-	queryForValues += ")"
-
+	query = query + strings.Join(arrQuery, ",") + ")"
+	queryForValues = queryForValues + strings.Join(valArr, ",") + ")"
 	return query + queryForValues, listValue, nil
 }
 
@@ -73,14 +68,14 @@ func (s structModel)update(table string)(query string, values[]interface{}, err 
 	if s.err != nil{
 		return "", nil, s.err
 	}
-
+	var arrQuery []string
 	query = "UPDATE " + table + " SET"
 	listValues := make([]interface{}, 0)
 	for i, _ := range s.value{
-		query += " " + s.key[i] + "= $" + strconv.Itoa(i+1) + ","
+		arrQuery = append(arrQuery, " " + s.key[i] + "= $" + strconv.Itoa(i+1))
 		listValues = append(listValues, s.value[i])
 	}
-	query = query[0:len(query)-1]
+	query = query + strings.Join(arrQuery, ",")
 	return query, listValues, nil
 }
 
@@ -170,17 +165,23 @@ func Conversion(model interface{}) providerQuery {
 			--------------------------------------------------------------------------------------
 			For temporary the assumption is int, int64 and bool to be treated differently
 		*/
-		if valueField.Type().String() == "int" || valueField.Type().String() == "int64" {
+		keys = append(keys, keyValue)
+		vals = append(vals, valueField.Interface().(interface{}))
+
+		/*
+			Bypassing type to interface{}
+
+		if valueField.Type().Kind() == reflect.Int || valueField.Type().Kind() == reflect.Int64 {
 			newInt := strconv.Itoa(int(valueField.Int()))
 			keys = append(keys, keyValue)
 			vals = append(vals, newInt)
-		} else if valueField.Type().String() == "bool" {
+		} else if valueField.Type().Kind() == reflect.Bool {
 			keys = append(keys, keyValue)
 			vals = append(vals, strconv.FormatBool(valueField.Bool()))
 		} else {
 			keys = append(keys, keyValue)
 			vals = append(vals, valueField.String())
-		}
+		}*/
 	}
 	convertedModel := structModel{key: keys,value: vals, err: nil}
 	result := providerQuery(convertedModel)
