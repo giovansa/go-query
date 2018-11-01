@@ -9,18 +9,18 @@ import (
 
 //Interface to provide functions to generate query
 type providerQuery interface {
-	viewAll(table string)(query string , err error)
-	insert(table string)(query string, values []interface{}, err error)
-	delete(table string)(query string, err error)
-	update(table string)(query string, values []interface{}, err error)
-	where(operatorCondition, operationBetweenCondition string)(query string, values []interface{}, err error)
+	ViewAll(table string)(query string , err error)
+	Insert(table string)(query string, values []interface{}, err error)
+	Delete(table string)(query string, err error)
+	Update(table string)(query string, values []interface{}, err error)
+	Where(operatorCondition, operationBetweenCondition string)(query string, values []interface{}, err error)
 }
 
 /*
 	Defining the body function
 */
 //Function to generating query for query SELECT *
-func (s structModel)viewAll(table string)(query string, err error){
+func (s structModel)ViewAll(table string)(query string, err error){
 	if s.err != nil{
 		return "", s.err
 	}
@@ -34,7 +34,7 @@ func (s structModel)viewAll(table string)(query string, err error){
 }
 
 //Function to generating query for query INSERT
-func (s structModel)insert(table string)(query string, values []interface{}, err error){
+func (s structModel)Insert(table string)(query string, values []interface{}, err error){
 	if s.err != nil{
 		return "", nil, s.err
 	}
@@ -54,7 +54,7 @@ func (s structModel)insert(table string)(query string, values []interface{}, err
 }
 
 //Function to generating query for query DELETE
-func (s structModel)delete(table string)(query string, err error){
+func (s structModel)Delete(table string)(query string, err error){
 	if s.err != nil{
 		return "", s.err
 	}
@@ -64,7 +64,7 @@ func (s structModel)delete(table string)(query string, err error){
 }
 
 //Function to generating query for query UPDATE
-func (s structModel)update(table string)(query string, values[]interface{}, err error){
+func (s structModel)Update(table string)(query string, values[]interface{}, err error){
 	if s.err != nil{
 		return "", nil, s.err
 	}
@@ -80,7 +80,7 @@ func (s structModel)update(table string)(query string, values[]interface{}, err 
 }
 
 //Function to generating WHERE condition to the query
-func (s structModel)where(operatorCondition, operationBetweenCondition string)(query string, values[]interface{}, err error){
+func (s structModel)Where(operatorCondition, operationBetweenCondition string)(query string, values[]interface{}, err error){
 	if s.err != nil{
 		return "", nil, s.err
 	}
