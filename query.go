@@ -105,6 +105,40 @@ type structModel struct {
 	err error
 }
 
+type batchQuery interface {
+	InsertQuery(table string)(query string, err error)
+	ValueBatch()(query string, values []interface{}, err error)
+}
+
+func (batchStructModel)InsertQuery(table string)(query string, err error){
+
+	return "", nil
+}
+func (batchStructModel)ValueBatch()(query string, values []interface{}, err error){
+
+	return "", nil, nil
+}
+
+type batchStructModel struct {
+	values []structModel
+	err error
+}
+
+func ValueConversion(model interface{}) batchQuery{
+	if reflect.TypeOf(model).Kind() == reflect.Slice{
+		/*
+			Check if inside the slice is a struct
+		*/
+		value := reflect.TypeOf(model).Elem()
+		if reflect.TypeOf(value.Field(0)).Kind() != reflect.Struct{
+			return batchQuery(batchStructModel{err:errors.New("parameter must be a struct")})
+		}
+	}
+	convertedModel := batchStructModel{}
+	result := batchQuery(convertedModel)
+	return result
+}
+
 func Conversion(model interface{}) providerQuery {
 	/*
 		Returning error as validation to force function only accepting struct
@@ -113,6 +147,7 @@ func Conversion(model interface{}) providerQuery {
 	if reflect.TypeOf(model).Kind() != reflect.Struct{
 		return providerQuery(structModel{err:errors.New("parameter must be a struct")})
 	}
+
 
 	var keys []string
 	var vals []interface{}
