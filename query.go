@@ -168,9 +168,12 @@ func Conversion(model interface{}) providerQuery {
 		if valueField.String() == "" {
 			continue
 		}/*
-		if typField.Type.String() == "int" || typField.Type.String() == "int64"{
-			if valueField.Int() == 0{continue}
-		}*/
+		/*
+			Skipping for nested struct
+		*/
+		if typField.Type.Kind() == reflect.Struct{
+			continue
+		}
 		keyValue, ok := typField.Tag.Lookup("db")
 		if !ok {
 			/*
