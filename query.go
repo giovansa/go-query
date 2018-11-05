@@ -195,11 +195,12 @@ func Conversion(model interface{}) providerQuery {
 			}
 		}
 
-		/*
-			This part is used to check the data type to be converted correctly to be used in query
-			--------------------------------------------------------------------------------------
-			For temporary the assumption is int, int64 and bool to be treated differently
-		*/
+		dateVal, ok := typField.Tag.Lookup("date")
+		if ok && dateVal=="now"{
+			keys = append(keys, keyValue)
+			vals = append(vals, "now()")
+			continue
+		}
 		keys = append(keys, keyValue)
 		vals = append(vals, valueField.Interface().(interface{}))
 
