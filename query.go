@@ -1,4 +1,4 @@
-package query
+package main
 
 import (
 	"errors"
@@ -94,16 +94,7 @@ func (s structModel)Where(operatorCondition, operationBetweenCondition string)(q
 	return  query, listValues, nil
 }
 
-/*
-	Model that is used as key and value to create the query
-	key : database column name
-	value : expected value
-*/
-type structModel struct {
-	key   []string
-	value []interface{}
-	err error
-}
+
 
 type batchQuery interface {
 	InsertQuery(table string)(query string, err error)
@@ -119,10 +110,6 @@ func (batchStructModel)ValueBatch()(query string, values []interface{}, err erro
 	return "", nil, nil
 }
 
-type batchStructModel struct {
-	values []structModel
-	err error
-}
 
 func ValueConversion(model interface{}) batchQuery{
 	if reflect.TypeOf(model).Kind() == reflect.Slice{
@@ -167,7 +154,7 @@ func Conversion(model interface{}) providerQuery {
 		*/
 		if valueField.String() == "" {
 			continue
-		}/*
+		}
 		/*
 			Skipping for nested struct
 		*/
@@ -176,14 +163,6 @@ func Conversion(model interface{}) providerQuery {
 		}
 		keyValue, ok := typField.Tag.Lookup("db")
 		if !ok {
-			/*
-				If tag not found
-				the converion will search for default tag
-				the default tag wll be used, to manipulate string in the struct's attribute
-				with ToUpper or ToLower
-				thus the Tag should be "lower" or "upper"
-				other than that struct's attribute name will be used to indentify database column
-			*/
 			tagDefault, ok := typField.Tag.Lookup("default")
 			if !ok{
 				keyValue = typField.Name
@@ -206,21 +185,6 @@ func Conversion(model interface{}) providerQuery {
 		}
 		keys = append(keys, keyValue)
 		vals = append(vals, valueField.Interface().(interface{}))
-
-		/*
-			Bypassing type to interface{}
-
-		if valueField.Type().Kind() == reflect.Int || valueField.Type().Kind() == reflect.Int64 {
-			newInt := strconv.Itoa(int(valueField.Int()))
-			keys = append(keys, keyValue)
-			vals = append(vals, newInt)
-		} else if valueField.Type().Kind() == reflect.Bool {
-			keys = append(keys, keyValue)
-			vals = append(vals, strconv.FormatBool(valueField.Bool()))
-		} else {
-			keys = append(keys, keyValue)
-			vals = append(vals, valueField.String())
-		}*/
 	}
 	convertedModel := structModel{key: keys,value: vals, err: nil}
 	result := providerQuery(convertedModel)
